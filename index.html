@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hackera AI — Търсене и Консултант</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-pearl h-full flex flex-col justify-between">
+
+  <!-- Навигация -->
+  <header class="sticky top-0 z-50 bg-paper border-b border-line-soft">
+    <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="w-8 h-8 rounded-lg bg-gradient flex items-center justify-center text-white font-bold">H</span>
+        <span class="font-display font-bold text-xl">Hackera AI Assistant</span>
+      </div>
+      <span class="text-xs font-mono text-muted">Google-Style Agent</span>
+    </div>
+  </header>
+
+  <!-- Google-стил интерфейс за чат / търсене -->
+  <main class="max-w-2xl w-full mx-auto px-4 py-8 flex-1 flex flex-col justify-center">
+    
+    <div id="welcomeScreen" class="text-center mb-8">
+      <h1 class="font-display text-3xl font-bold mb-2">Какво желаете да постигнем днес?</h1>
+      <p class="text-muted text-sm">Попитай бота за уеб сайт, маркетинг стратегии, SEO или друга дигитална услуга.</p>
+    </div>
+
+    <!-- Чат съобщения / История -->
+    <div id="chatHistory" class="space-y-4 mb-6 overflow-y-auto max-h-[55vh] p-2">
+      <!-- Динамично се появяват въпросите и отговорите тук -->
+    </div>
+
+    <!-- Google-стил поле за въвеждане в дъното или средата -->
+    <div class="relative w-full">
+      <form id="chatForm" class="flex items-center bg-white border border-line-soft rounded-full shadow-lg px-6 py-3 gap-3">
+        <i data-lucide="search" class="w-5 h-5 text-muted"></i>
+        <input 
+          type="text" 
+          id="userInput" 
+          placeholder="Попитай например: Трябва ми фирмен сайт или SEO одит..." 
+          class="w-full bg-transparent outline-none text-sm font-medium"
+          autocomplete="off"
+          required
+        >
+        <button type="submit" class="w-8 h-8 rounded-full bg-gradient text-white flex items-center justify-center btn-glow shrink-0">
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </form>
+    </div>
+
+  </main>
+
+  <footer class="text-center py-4 text-xs text-muted border-t border-line-soft">
+    &copy; 2026 Hackera. Всички права запазени.
+  </footer>
+
+  <!-- Скриптове -->
+  <script src="data.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+
+      const chatForm = document.getElementById("chatForm");
+      const userInput = document.getElementById("userInput");
+      const chatHistory = document.getElementById("chatHistory");
+      const welcomeScreen = document.getElementById("welcomeScreen");
+
+      chatForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const query = userInput.value.trim();
+        if (!query) return;
+
+        // Скриване на началния екран при първо търсене
+        if (welcomeScreen) {
+          welcomeScreen.style.display = "none";
+        }
+
+        // 1. Добавяне на съобщението на потребителя
+        appendMessage(query, "user");
+        userInput.value = "";
+
+        // 2. Симулация на мислене и отговор от бота базиран на вашите данни
+        setTimeout(() => {
+          const botResponse = generateBotResponse(query);
+          appendMessage(botResponse, "bot");
+        }, 500);
+      });
+
+      function appendMessage(text, sender) {
+        const msgDiv = document.createElement("div");
+        msgDiv.className = `flex ${sender === "user" ? "justify-end" : "justify-start"}`;
+
+        const bubble = document.createElement("div");
+        bubble.className = sender === "user" 
+          ? "bg-ink text-white px-5 py-3 rounded-2xl max-w-lg text-sm shadow" 
+          : "bg-white border border-line-soft text-ink px-5 py-3 rounded-2xl max-w-lg text-sm shadow-lg space-y-2";
+
+        if (sender === "bot") {
+          bubble.innerHTML = `<div class="font-semibold text-xs text-orange-deep font-mono mb-1">HACKERA AI AGENT</div><div>${text}</div>`;
+        } else {
+          bubble.textContent = text;
+        }
+
+        msgDiv.appendChild(bubble);
+        chatHistory.appendChild(msgDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+        lucide.createIcons();
+      }
+
+      // Интелигентна функция, която търси в подадените от вас данни (SERVICES)
+      function generateBotResponse(query) {
+        const lowerQuery = query.toLowerCase();
+        
+        // Търсене в масива от услуги от data.js[cite: 1]
+        const matchedServices = SERVICES.filter(s => 
+          s.name.bg.toLowerCase().includes(lowerQuery) || 
+          s.desc.bg.toLowerCase().includes(lowerQuery) ||
+          lowerQuery.split(" ").some(word => word.length > 2 && s.name.bg.toLowerCase().includes(word))
+        );
+
+        if (matchedServices.length > 0) {
+          let html = `Намерих следните подходящи услуги от нашия каталог за вас:<br><ul class="mt-2 space-y-1">`;
+          matchedServices.slice(0, 3).forEach(s => {
+            html += `<li class="border-t border-line-soft pt-1"><strong>${s.name.bg}</strong>: <span class="text-muted text-xs">${s.desc.bg}</span></li>`;
+          });
+          html += `</ul>`;
+          return html;
+        } else {
+          return `Разгледахме заявката ви. Можем да ви помогнем с персонализирано решение. Разполагаме с над ${SERVICES.length} професионални услуги в сферите на уеб разработката, SEO и маркетинга. Искате ли да ви свържа с експерт?`;
+        }
+      }
+    });
+  </script>
+</body>
+</html>
